@@ -1,0 +1,13 @@
+name: franca
+version: 0.1.0
+
+authors:
+  - Rémy Marronnier <rmarronnier@gmail.com>
+
+crystal: 0.30.0
+
+cadmium:
+  github: watzon/cadmium
+  branch: master
+
+license: MIT
