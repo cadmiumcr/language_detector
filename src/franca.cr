@@ -4,7 +4,7 @@ require "json"
 module Franca
   VERSION = "0.1.0"
 
-  @@expressions : Tuple(Symbol, Regex)
+  @@expressions : NamedTuple(Symbol, Regex)
 
   @@languages : Hash(Symbol, Array(String))
 
@@ -37,18 +37,18 @@ module Franca
   end
 
   def get_occurence(text : String, expression : Regex) : Float
-    count = text.match(expression)
-    (count ? count.size : 0) / value.size || 0
+    count = expression.match(text).size
+    (count ? count : 0) / text.size || 0
   end
 
-  def get_top_expression(text : String, expressions = @@expressions) : Hash(Regex, Int32)
+  def get_top_expression(text : String, expressions = @@expressions) : Hash(NamedTuple(Symbol, Regex), Int32)
     top_count = -1
-    top_expression : Regex
-    expressions.each do |expression|
-      count = get_occurrence(value, expression)
+    top_expression = Regex.new
+    expressions.each do |_, expression|
+      count = get_occurrence(text, expression)
       if (count > top_count)
         top_count = count
-        top_expression = expression
+        top_expression = {script expression}
       end
     end
     {top_expression => top_count}
