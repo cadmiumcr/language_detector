@@ -1,6 +1,6 @@
 require "./spec_helper"
-include Franca
-describe Franca do
+include LanguageDetector
+describe LanguageDetector do
   subject = LanguageDetector.new
   test = "제 26 조
   1) 모든 사람은 교육을 받을 권리를 가진다 . 교육은 최소한 초등 및 기초단계에서는 무상이어야 한다. 초등교육은 의무적이어야 한다. 기술 및 직업교육은 일반적으로 접근이 가능하여야 하며, 고등교육은 모든 사람에게 실력에 근거하여 동등하게 접근 가능하여야 한다.

@@ -1,14 +1,9 @@
-name: franca
+name: cadmium_language_detector
 version: 0.1.0
 
 authors:
   - Rémy Marronnier <rmarronnier@gmail.com>
 
 crystal: 0.30.1
-
-dependencies:
-  cadmium:
-    github: watzon/cadmium
-    branch: master
 
 license: MIT

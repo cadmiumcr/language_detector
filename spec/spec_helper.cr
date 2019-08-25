@@ -1,2 +1,2 @@
 require "spec"
-require "../src/franca"
+require "../src/language_detector"
