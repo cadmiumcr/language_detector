@@ -7,7 +7,7 @@ module Franca
     # "Reference ": "htt =>":/ =>www.unicode.org/Public/UNIDATA/Blocks.txt
     # Removed utf-16 characters because crystal pcre regex implementation doesn't support them
     @@expressions : Hash(String, Regex) = {
-      "cmn"                 => /[\x{2E80}-\x{2E99}\x{2E9B}-\x{2EF3}\x{2F00}-\x{2FD5}\x{3005}\x{3007}\x{3021}-\x{3029}\x{3038}-\x{303B}\x{3400}-\x{4DB5}\x{4E00}-\x{9FCC}\x{F900}-\x{FA6D}\x{FA70}-\x{FAD9}]/,
+      "cmn"                 => /[\x{2E80}-\x{2E99}\x{2E9B}-\x{2EF3}\x{2F00}-\x{2FD5}\x{3005}\x{3007}\x{3021}-\x{3029}\x{3038}-\x{303B}\x{3400}-\x{4DB5}\x{4E00}-\x{9FCC}\x{F900}-\x{FA6D}\x{FA70}-\x{FAD9}]/im,
       "Latin"               => /[A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\x{02B8}\x{02E0}-\x{02E4}\x{1D00}-\x{1D25}\x{1D2C}-\x{1D5C}\x{1D62}-\x{1D65}\x{1D6B}-\x{1D77}\x{1D79}-\x{1DBE}\x{1E00}-\x{1EFF}\x{2071}\x{207F}\x{2090}-\x{209C}\x{212A}\x{212B}\x{2132}\x{214E}\x{2160}-\x{2188}\x{2C60}-\x{2C7F}\x{A722}-\x{A787}\x{A78B}-\x{A78E}\x{A790}-\x{A7AD}\x{A7B0}\x{A7B1}\x{A7F7}-\x{A7FF}\x{AB30}-\x{AB5A}\x{AB5C}-\x{AB5F}\x{AB64}\x{FB00}-\x{FB06}\x{FF21}-\x{FF3A}\x{FF41}-\x{FF5A}]/,
       "Cyrillic"            => /[\x{0400}-\x{0484}\x{0487}-\x{052F}\x{1D2B}\x{1D78}\x{2DE0}-\x{2DFF}\x{A640}-\x{A69D}\x{A69F}]/,
       "Arabic"              => /[\x{0600}-\x{0604}\x{0606}-\x{060B}\x{060D}-\x{061A}\x{061E}\x{0620}-\x{063F}\x{0641}-\x{064A}\x{0656}-\x{065F}\x{066A}-\x{066F}\x{0671}-\x{06DC}\x{06DE}-\x{06FF}\x{0750}-\x{077F}\x{08A0}-\x{08B2}\x{08E4}-\x{08FF}\x{FB50}-\x{FBC1}\x{FBD3}-\x{FD3D}\x{FD50}-\x{FD8F}\x{FD92}-\x{FDC7}\x{FDF0}-\x{FDFD}\x{FE70}-\x{FE74}\x{FE76}-\x{FEFC}]/,
@@ -62,7 +62,9 @@ module Franca
     end
 
     def trigrams_and_value(text : String) : Hash(String, Int32)
-      Cadmium.ngrams.new(Cadmium::VisibleCharTokenizer.new).trigrams(text).each { |trigram| trigram.join }.not_nil!.tally # returns array of three characters set (excluding whitespace so needs to implement better/specific tokenizer)
+      text_without_punctuation = text.gsub(/[\x{0021}-\x{0040}]+/, ' ').downcase
+      trigrams_array = Cadmium.ngrams.new(Cadmium::RegexTokenizer.new(/.{3}/)).trigrams(text_without_punctuation).compact!.map { |array| array.join } # .map! { |trigram| trigram.join if trigram.is_a?(Array) } # returns array of three characters set (excluding whitespace so needs to implement better/specific tokenizer)
+      trigrams_array.tally
     end
 
     def detect(text : String) : String
@@ -71,7 +73,7 @@ module Franca
 
     def detect_all(text : String) : Hash(String, Float64)
       expression = get_top_expression(text, @@expressions)
-      return {expression.keys[0] => 1.0} unless @@data.includes?(expression.keys[0])
+      return {expression.keys[0] => 1.0} unless @@data.keys.includes?(expression.keys[0])
       normalize(text, get_distances(trigrams_and_value(text), @@languages))
     end
 
@@ -82,7 +84,7 @@ module Franca
     # end
 
     def normalize(text : String, distances : Hash(String, Int32)) : Hash(String, Float64)
-      min = distances.values[1]
+      min = 0 # distances.values[1]
       max = text.size * 300 - min
       distances_float = Hash(String, Float64).new
       distances.each do |string, distance|
@@ -93,8 +95,10 @@ module Franca
 
     def get_occurence(text : String, expression : Regex) : Int32
       count = 0
-      count = expression.match(text).not_nil!.size unless expression.match(text).nil?
-      (count ? count : 0) / text.size || 0
+      text.scan(expression).each { |_| count += 1 }
+      # count = expression.match(text).not_nil!.group_size unless expression.match(text).nil?
+      # (count ? count : 0) / text.size || 0
+      count
     end
 
     def get_top_expression(text : String, expressions : Hash(String, Regex)) : Hash(String, Regex)
