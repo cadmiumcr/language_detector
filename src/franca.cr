@@ -45,7 +45,7 @@ module Franca
       "blt" => /[\x{AA80}-\x{AAC2}\x{AADB}-\x{AADF}]/,
     }
     DATA_FILE = "#{__DIR__}/../data/data.json"
-    @@data = Hash(String, Hash(String, String)).from_json({{ read_file(DATA_FILE) }}) # Should be namedtuple
+    @@data = Hash(String, Hash(String, String)).from_json({{ read_file(DATA_FILE) }}) # Should be namedtuple : will be when crystal 0.31 is out (from_json issue fixed in master #8109)
 
     @@languages = Hash(String, Hash(Array(String), Int32)).new # Should be namedtuple
     # I should modify the json file instead of building the data model each time !
@@ -62,9 +62,17 @@ module Franca
     end
 
     def trigrams_and_value(text : String) : Hash(String, Int32)
-      text_without_punctuation = text.gsub(/[\x{0021}-\x{0040}]+/, ' ').downcase
-      trigrams_array = Cadmium.ngrams.new(Cadmium::RegexTokenizer.new(/.{3}/)).trigrams(text_without_punctuation).compact!.map { |array| array.join } # .map! { |trigram| trigram.join if trigram.is_a?(Array) } # returns array of three characters set (excluding whitespace so needs to implement better/specific tokenizer)
-      trigrams_array.tally
+      text_without_punctuation = text.downcase.delete('\n').gsub(/[\x{0021}-\x{0040}]/, "")
+      trigrams_array = Array(String).new
+      text_without_punctuation.scan(/.{3}/).each { |trigram| trigrams_array << trigram[0] } # .gsub('\n', 'o').gsub(/[\x{0021}-\x{0040}]/, 'r').downcase
+      # trigrams_array = (/.{3}/)).trigrams(text_without_punctuation).compact!.map { |array| array.join } # .map! { |trigram| trigram.join if trigram.is_a?(Array) } # returns array of three characters set (excluding whitespace so needs to implement better/specific tokenizer)
+      # trigrams_array = Cadmium.ngrams.new(Cadmium::RegexTokenizer.new(/.{3}/)).trigrams(text_without_punctuation).compact!.map { |array| array.join } # .map! { |trigram| trigram.join if trigram.is_a?(Array) } # returns array of three characters set (excluding whitespace so needs to implement better/specific tokenizer)
+      trigrams_count_hash = trigrams_array.tally
+      sorted_trigrams_hash = Hash(String, Int32).new # All of this could be replaced by a one liner if Crystal supported sort_by for Hash...
+      trigrams_count_hash.values.sort_by { |values| -values }.each do |value|
+        sorted_trigrams_hash[trigrams_count_hash.key_for(value)] = value
+      end
+      sorted_trigrams_hash
     end
 
     def detect(text : String) : String
@@ -84,7 +92,7 @@ module Franca
     # end
 
     def normalize(text : String, distances : Hash(String, Int32)) : Hash(String, Float64)
-      min = 0 # distances.values[1]
+      min = distances.values[1] # index out of bounds at 1
       max = text.size * 300 - min
       distances_float = Hash(String, Float64).new
       distances.each do |string, distance|
@@ -115,29 +123,28 @@ module Franca
     end
 
     # Calculate the distances between an array of trigrams and multiple trigrams dictionaries (languages from data.json)
-    def get_distances(trigrams : Hash(String, Int32), languages : Hash(String, Hash(Array(String), Int32)) = @@languages) : Hash(String, Int32)
+    def get_distances(text_trigrams : Hash(String, Int32), languages : Hash(String, Hash(Array(String), Int32)) = @@languages) : Hash(String, Int32)
       distances = Hash(String, Int32).new
-      languages.each do |language, model_and_value|
-        distances[language] = get_distance(trigrams, model_and_value)
+      languages.each do |language, language_trigrams_and_size|
+        distances[language] = get_distance(text_trigrams, language_trigrams_and_size)
       end
 
       sorted_distances = Hash(String, Int32).new # All of this could be replaced by a one liner if Crystal supported sort_by for Hash...
-      distances.values.sort_by { |values| -values }.each do |value|
+      distances.values.sort_by { |values| values }.each do |value|
         sorted_distances[distances.key_for(value)] = value
       end
       sorted_distances
+      # distances
     end
 
     def get_distance(trigrams : Hash(String, Int32), model : Hash(Array(String), Int32)) : Int32
       distance = 0
       difference : Int32
 
-      trigrams.each do |trigram|
-        if model.keys.includes?(trigram[0])
-          difference = trigram[1] - model.keys.index(trigram[0]).not_nil! - 1 # I have no idea what this means
-          if difference < 0
-            difference = -difference
-          end
+      trigrams.keys.each do |trigram|
+        if model.first_key.includes?(trigram)
+          difference = trigrams.fetch(trigram, 1) - model.first_key.index(trigram).not_nil! - 1
+          difference = -difference if difference < 0
         else
           difference = 300 # max_difference
         end

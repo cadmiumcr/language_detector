@@ -69,10 +69,28 @@ describe Franca do
   Au loin très loin de Brest
   Dont il ne reste rien. "
 
+  test3 = "Alice was published in 1865, three years after Charles Lutwidge Dodgson and the Reverend Robinson Duckworth rowed in a
+  boat, on 4 July 1862 [4] (this popular date of the golden afternoon [5] might be a confusion or even another Alice-tale, for that
+  particular day was cool, cloudy and rainy [6] ), up the Isis with the three young daughters of Henry Liddell (the Vice-Chancellor ofOxford University and Dean of Christ Church): Lorina Charlotte Liddell (aged
+  13, born 1849) (Prima in the book's prefatory verse); Alice Pleasance Liddell
+  (aged 10, born 1852) (Secunda in the prefatory verse); Edith Mary Liddell
+  (aged 8, born 1853) (Tertia in the prefatory verse). [7]
+  The journey began at Folly Bridge near Oxford and ended five miles away in the
+  village of Godstow. During the trip Charles Dodgson told the girls a story that
+  featured a bored little girl named Alice who goes looking for an adventure. The
+  girls loved it, and Alice Liddell asked Dodgson to write it down for her. He
+  began writing the manuscript of the story the next day, although that earliest
+  version no longer exists. The girls and Dodgson took another boat trip a month
+  later when he elaborated the plot to the story of Alice, and in November he
+  began working on the manuscript in earnest."
+
   it "should detect korean" do
     subject.detect(test).should eq("kor")
   end
   it "should detect french" do
     subject.detect(test2).should eq("fra")
+  end
+  it "should detect english" do
+    subject.detect(test3).should eq("eng")
   end
 end
