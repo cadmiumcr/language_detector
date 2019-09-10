@@ -1,2 +1,2 @@
 require "spec"
-require "../src/language_detector"
+require "../src/cadmium/language_detector"
