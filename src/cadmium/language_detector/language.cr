@@ -1,7 +1,7 @@
 module Cadmium
   module Language
     struct IsoCode3To1
-      getter codes : Hash(String, String) = {
+      getter codes : Hash(String, String) = { # Symbolize keys + values
         "aae" => "sq",
         "aao" => "ar",
         "aar" => "aa",
@@ -420,7 +420,7 @@ module Cadmium
     class LanguageData
       # "Reference ": "htt =>":/ =>www.unicode.org/Public/UNIDATA/Blocks.txt
       # Removed utf-16 characters because crystal pcre regex implementation doesn't support them
-      getter expressions : Hash(String, Regex) = {
+      getter expressions : Hash(String, Regex) = { # Symbolize keys
         "cmn"                 => /[\x{2E80}-\x{2E99}\x{2E9B}-\x{2EF3}\x{2F00}-\x{2FD5}\x{3005}\x{3007}\x{3021}-\x{3029}\x{3038}-\x{303B}\x{3400}-\x{4DB5}\x{4E00}-\x{9FCC}\x{F900}-\x{FA6D}\x{FA70}-\x{FAD9}]/im,
         "Latin"               => /[A-Za-z\xAA\xBA\xC0-\xD6\xD8-\xF6\xF8-\x{02B8}\x{02E0}-\x{02E4}\x{1D00}-\x{1D25}\x{1D2C}-\x{1D5C}\x{1D62}-\x{1D65}\x{1D6B}-\x{1D77}\x{1D79}-\x{1DBE}\x{1E00}-\x{1EFF}\x{2071}\x{207F}\x{2090}-\x{209C}\x{212A}\x{212B}\x{2132}\x{214E}\x{2160}-\x{2188}\x{2C60}-\x{2C7F}\x{A722}-\x{A787}\x{A78B}-\x{A78E}\x{A790}-\x{A7AD}\x{A7B0}\x{A7B1}\x{A7F7}-\x{A7FF}\x{AB30}-\x{AB5A}\x{AB5C}-\x{AB5F}\x{AB64}\x{FB00}-\x{FB06}\x{FF21}-\x{FF3A}\x{FF41}-\x{FF5A}]/,
         "Cyrillic"            => /[\x{0400}-\x{0484}\x{0487}-\x{052F}\x{1D2B}\x{1D78}\x{2DE0}-\x{2DFF}\x{A640}-\x{A69D}\x{A69F}]/,
@@ -459,7 +459,7 @@ module Cadmium
         "blt" => /[\x{AA80}-\x{AAC2}\x{AADB}-\x{AADF}]/,
       }
       DATA_FILE = "#{__DIR__}/../data/data.json"
-      getter trigrams : Hash(String, Hash(String, String)) # Should be namedtuple : will be when crystal 0.31 is out (from_json issue fixed in master #8109)
+      getter trigrams : Hash(String, Hash(String, String)) # Symbolize keys
 
       def initialize # Workaround for https://github.com/crystal-lang/crystal/issues/8163
         @trigrams = Hash(String, Hash(String, String)).from_json({{ read_file(DATA_FILE) }})

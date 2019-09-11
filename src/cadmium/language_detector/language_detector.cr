@@ -7,13 +7,17 @@ module Cadmium
     @@lang_data = LanguageData.new
     @@trigrams_data : Hash(String, Hash(String, String)) = @@lang_data.trigrams
     @@expressions : Hash(String, Regex) = @@lang_data.expressions
-    @@languages = Hash(String, Array(String)).new
-    @@iso_hash : Hash(String, String) = IsoCode3To1.new.codes
+    @@languages = Hash(String, Array(String)).new             # Symbolize keys
+    @@iso_hash : Hash(String, String) = IsoCode3To1.new.codes # Symbolize keys + values
+    @@whitelist : Tuple(String) = {""}                        # Symbolize
+    @@blacklist : Tuple(String) = {""}                        # Symbolize
 
-    def initialize
+    def initialize(whitelist = @@whitelist, blacklist = @@blacklist)
+      @@whitelist = whitelist
+      @@blacklist = blacklist
       @@trigrams_data.values.each do |languages|
         languages.each do |language, model|
-          @@languages[language] = model.split('|')
+          @@languages[language] = model.split('|') if (whitelist.includes?(@@iso_hash.fetch(language, language)) || !blacklist.includes?(@@iso_hash.fetch(language, language)))
         end
       end
     end
@@ -42,8 +46,8 @@ module Cadmium
     end
 
     private def normalize(text : String, distances : Hash(String, Int32)) : Hash(String, Float64)
-      min = distances.values[1]
-      max = text.size * 300 - min
+      min = !distances.values[1..].empty? ? distances.values[1] : 1
+      max = (text.size + 1) * 300 - min
       distances_float = Hash(String, Float64).new
       distances.each do |string, distance|
         distances_float[string] = (1 - (distance - min) / max).to_f || 0.0
