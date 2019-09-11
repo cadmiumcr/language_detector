@@ -2,16 +2,17 @@ require "json"
 require "./language"
 
 module Cadmium
+  # Cadmium::LanguageDetector is a Language Identification algorithm which identifies up to 400 different languages.
   class LanguageDetector
     include Language
     @@lang_data = LanguageData.new
     @@trigrams_data : Hash(String, Hash(String, String)) = @@lang_data.trigrams
     @@expressions : Hash(String, Regex) = @@lang_data.expressions
-    @@languages = Hash(String, Array(String)).new             # Symbolize keys
-    @@iso_hash : Hash(String, String) = IsoCode3To1.new.codes # Symbolize keys + values
-    @@whitelist : Tuple(String) = {""}                        # Symbolize
-    @@blacklist : Tuple(String) = {""}                        # Symbolize
-
+    @@languages = Hash(String, Array(String)).new             # TODO Symbolize keys
+    @@iso_hash : Hash(String, String) = IsoCode3To1.new.codes # TODO Symbolize keys + values
+    @@whitelist : Tuple(String) = {""}                        # TODO Symbolize
+    @@blacklist : Tuple(String) = {""}                        # TODO Symbolize
+    # A LanguageDetector object can be initiampized with a whitelist and/or blacklist of languages. Those lists have to be Tuple of String.
     def initialize(whitelist = @@whitelist, blacklist = @@blacklist)
       @@whitelist = whitelist
       @@blacklist = blacklist
@@ -34,11 +35,13 @@ module Cadmium
       sorted_trigrams_hash
     end
 
+    # Returns a two letters string corresponding to the ISO-868-1 code of the detected language.
     def detect(text : String) : String
       result = detect_all(text).keys[0]
       @@iso_hash.fetch(result, result)
     end
 
+    # Returns an Hash of two letters string corresponding to the ISO-868-1 code of the detected language mapped to their probability.
     def detect_all(text : String) : Hash(String, Float64)
       expression = get_top_expression(text, @@expressions)
       return {expression.keys[0] => 1.0} unless @@trigrams_data.keys.includes?(expression.keys[0])
@@ -61,7 +64,7 @@ module Cadmium
       count
     end
 
-    def get_top_expression(text : String, expressions : Hash(String, Regex)) : Hash(String, Regex)
+    private def get_top_expression(text : String, expressions : Hash(String, Regex)) : Hash(String, Regex)
       top_count = -1
       top_expression = Hash(String, Regex).new
       expressions.each do |script, expression|
