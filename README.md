@@ -1,12 +1,16 @@
 # Language Detector
 
+![](https://github.com/cadmiumcr/language_detector/workflows/language_detector/badge.svg)
+
 Crystal port of [franc](https://github.com/wooorm/franc).
 
 It's not the state-of-the-art algorithm on language identification, but gets 90%+ success on long enough text samples.
 
+It supports 400+ languages.
+
 It identifies any given text sample by extracting its 3 characters trigrams and comparing them to the most recurring trigrams extracted from a translation of the [UDHR](https://www.un.org/en/universal-declaration-human-rights/) in all the available languages.
 
-Language Detector returns the ISO-869-3 three letters language code of the most probable guess.
+Language Detector returns the ISO-869-1 two letters language code of the most probable guess.
 
 ## Installation
 
@@ -23,7 +27,7 @@ Language Detector returns the ISO-869-3 three letters language code of the most 
 ## Usage
 
 ```crystal
-require "language_detector"
+require "cadmium_language_detector"
 
 text = "Alice was published in 1865, three years after Charles Lutwidge Dodgson and the Reverend Robinson Duckworth rowed in a
 boat, on 4 July 1862 [4] (this popular date of the golden afternoon [5] might be a confusion or even another Alice-tale, for that
@@ -40,9 +44,7 @@ version no longer exists. The girls and Dodgson took another boat trip a month
 later when he elaborated the plot to the story of Alice, and in November he
 began working on the manuscript in earnest."
 
-pp LanguageDetector.new.detect(text)
-
-# "eng"
+pp LanguageDetector.new.detect(text) # => "en"
 
 ```
 
