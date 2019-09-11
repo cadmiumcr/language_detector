@@ -9,11 +9,15 @@ module Cadmium
     @@expressions : Hash(String, Regex) = @@lang_data.expressions
     @@languages = Hash(String, Array(String)).new             # Symbolize keys
     @@iso_hash : Hash(String, String) = IsoCode3To1.new.codes # Symbolize keys + values
+    @@whitelist : Tuple(String) = {""}                        # Symbolize
+    @@blacklist : Tuple(String) = {""}                        # Symbolize
 
-    def initialize
+    def initialize(whitelist = @@whitelist, blacklist = @@blacklist)
+      @@whitelist = whitelist
+      @@blacklist = blacklist
       @@trigrams_data.values.each do |languages|
         languages.each do |language, model|
-          @@languages[language] = model.split('|')
+          @@languages[language] = model.split('|') if (whitelist.includes?(@@iso_hash.fetch(language, language)) || !blacklist.includes?(@@iso_hash.fetch(language, language)))
         end
       end
     end
