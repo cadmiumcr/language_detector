@@ -1,6 +1,4 @@
 require "json"
-require "cadmium_ngrams"
-
 require "./language"
 
 module Cadmium
