@@ -7,7 +7,6 @@ module Cadmium
     include Language
 
     @@lang_data = LanguageData.new
-    @@ngrams = Cadmium::NGrams.new
 
     @trigrams_data : Hash(String, Hash(String, String))
     @expressions : Hash(String, Regex)
