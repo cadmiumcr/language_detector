@@ -49,12 +49,12 @@ module Cadmium
     def detect_all(text : String) : Hash(String, Float64)
       expression = get_top_expression(text, @expressions)
       return {expression.keys[0] => 1.0} unless @trigrams_data.keys.includes?(expression.keys[0])
-      distances = get_distances(trigrams_and_value(text), @languages)
+      distances = get_distances(trigrams_and_value(text))
       normalize(text, distances)
     end
 
     private def normalize(text : String, distances : Hash(String, Int32)) : Hash(String, Float64)
-      min = !distances.values[1..].empty? ? distances.values[1] : 1
+      min = !distances.values[0..].empty? ? distances.values[0] : 1
       max = (text.size + 1) * 300 - min
       distances.map do |string, distance|
         {string, (1 - (distance - min) / max).to_f || 0.0}
@@ -81,16 +81,10 @@ module Cadmium
     end
 
     # Calculate the distances between an array of trigrams and multiple trigrams dictionaries (languages from data.json)
-    private def get_distances(text_trigrams : Hash(String, Int32), languages : Hash(String, Array(String)) = @languages) : Hash(String, Int32)
-      distances = languages.map do |language, language_trigrams|
+    private def get_distances(text_trigrams : Hash(String, Int32)) : Hash(String, Int32)
+      @languages.map do |language, language_trigrams|
         {language, get_distance(text_trigrams, language_trigrams)}
-      end.to_h
-
-      sorted_distances = Hash(String, Int32).new # All of this could be replaced by a one liner if Crystal supported sort_by for Hash...
-      distances.values.sort_by { |values| values }.each do |value|
-        sorted_distances[distances.key_for(value)] = value
-      end
-      sorted_distances
+      end.sort_by { |_, v| v }.to_h
     end
 
     private def get_distance(trigrams : Hash(String, Int32), model : Array(String)) : Int32
