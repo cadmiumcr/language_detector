@@ -24,7 +24,7 @@ module Cadmium
       @trigrams_data.values.each do |languages|
         languages.each do |language, model|
           if whitelist.includes?(@iso_hash.fetch(language, language)) ||
-              !blacklist.includes?(@iso_hash.fetch(language, language))
+             !blacklist.includes?(@iso_hash.fetch(language, language))
             @languages[language] = model.split('|')
           end
         end

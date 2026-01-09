@@ -10,8 +10,6 @@ FIXTURES = JSON.parse(File.read(File.expand_path("./data/fixtures.json", __DIR__
 # FIXME: Find out why these examples fail
 SKIP = ["gax", "bos", "srp", "uzn", "zlm", "azj", "uig", "tuk", "kng", "fuf", "est"]
 
-
-
 describe Cadmium::LanguageDetector do
   subject = Cadmium::LanguageDetector.new
 
